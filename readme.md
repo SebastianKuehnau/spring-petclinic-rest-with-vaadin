@@ -1,223 +1,187 @@
-# REST version of Spring PetClinic Sample Application (spring-framework-petclinic extend ) 
+# Vaadin Integration into the REST version of Spring PetClinic Sample Application (spring-framework-petclinic) 
 
-[![Java Build Status](https://github.com/spring-petclinic/spring-petclinic-rest/actions/workflows/maven-build.yml/badge.svg)](https://github.com/spring-petclinic/spring-petclinic-rest/actions/workflows/maven-build.yml)
-[![Docker Build Status](https://github.com/spring-petclinic/spring-petclinic-rest/actions/workflows/docker-build.yml/badge.svg)](https://github.com/spring-petclinic/spring-petclinic-rest/actions/workflows/docker-build.yml)
+This project is based on the [Spring PetClinic application with Rest](https://github.com/spring-petclinic/spring-petclinic-rest) and was used as an example to show how to integrate Vaadin into a Spring project. For information on this project, please refer to the corresponding documentation. Only the integration of Vaadin is shown below.
 
-This backend version of the Spring Petclinic application only provides a REST API. **There is no UI**.
-The [spring-petclinic-angular project](https://github.com/spring-petclinic/spring-petclinic-angular) is a Angular front-end application which consumes the REST API.
+## Integrate Vaadin into the spring project
 
-## Understanding the Spring Petclinic application with a few diagrams
+This example demonstrates how to integrate Vaadin into a Spring project with step-by-step configuration and implementation instructions.
 
-[See the presentation of the Spring Petclinic Framework version](http://fr.slideshare.net/AntoineRey/spring-framework-petclinic-sample-application)
+### Prerequisites
+- JDK 17 or later
+- Maven 3.5 or later (except for 3.8.2 and 3.8.3)
+- Spring Boot 3.0 or later
 
-### Petclinic ER Model
+### Project Configuration
 
-![alt petclinic-ermodel](petclinic-ermodel.png)
+#### 1. Define Vaadin Version
+In your `pom.xml`, define a property for the Vaadin version to simplify updates.
 
-## Running Petclinic locally
-
-### With Maven command line
-```sh
-git clone https://github.com/spring-petclinic/spring-petclinic-rest.git
-cd spring-petclinic-rest
-./mvnw spring-boot:run
+```xml
+<properties>
+    <vaadin.version>24.6.1</vaadin.version>
+</properties>
 ```
 
-### With Docker
-```sh
-docker run -p 9966:9966 springcommunity/spring-petclinic-rest
+#### 2. Set Spring Boot Starter Parent
+Ensure your project uses the `spring-boot-starter-parent`.
+
+```xml
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.4.1</version>
+    <relativePath />
+</parent>
 ```
 
-You can then access petclinic here: [http://localhost:9966/petclinic/](http://localhost:9966/petclinic/)
+#### 3. Use Vaadin BOM (Bill of Materials)
+To manage Vaadin dependencies for a specific version, include the Vaadin BOM in the dependency management section.
 
-There is an actuator health check route as well:
-* [http://localhost:9966/petclinic/actuator/health](http://localhost:9966/petclinic/actuator/health)
-
-## OpenAPI REST API documentation
-
-You can reach the Swagger UI with this URL (after application start):
-[http://localhost:9966/petclinic/](http://localhost:9966/petclinic/swagger-ui.html).
-
-You then can get the Open API description reaching this URL: [localhost:9966/petclinic/v3/api-docs](localhost:9966/petclinic/v3/api-docs).
-
-## Screenshot of the Angular client
-
-See its repository here: https://github.com/spring-petclinic/spring-petclinic-angular
-
-<img width="1427" alt="spring-petclinic-angular2" src="https://cloud.githubusercontent.com/assets/838318/23263243/f4509c4a-f9dd-11e6-951b-69d0ef72d8bd.png">
-
-## In case you find a bug/suggested improvement for Spring Petclinic
-Our issue tracker is available here: https://github.com/spring-petclinic/spring-petclinic-rest/issues
-
-
-## Database configuration
-
-In its default configuration, Petclinic uses an in-memory database (HSQLDB) which gets populated at startup with data.
-
-A similar setup is provided for MySQL and PostgreSQL if a persistent database configuration is needed.
-
-Note that whenever the database type changes, the app needs to run with a different profile: `spring.profiles.active=mysql` for MySQL or `spring.profiles.active=postgres` for PostgreSQL.
-See the [Spring Boot documentation](https://docs.spring.io/spring-boot/how-to/properties-and-configuration.html#howto.properties-and-configuration.set-active-spring-profiles) for more detail on how to set the active profile.
-You can also change profile defined in the `application.properties` file.
-For MySQL database, it is needed to change param `hsqldb` to `mysql` in the following line of `application.properies` file:
-```properties
-spring.profiles.active=hsqldb,spring-data-jpa
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-bom</artifactId>
+            <version>${vaadin.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
 ```
 
-You can start MySQL or PostgreSQL locally with whatever installer works for your OS or use docker:
+#### 4. Add Vaadin Dependencies
+Add the required dependencies for Vaadin and Spring Boot integration.
 
-```bash
-docker run -e MYSQL_USER=petclinic -e MYSQL_PASSWORD=petclinic -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=petclinic -p 3306:3306 mysql:8.4
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-devtools</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+</dependencies>
+```
+#### 5. Add Maven Plugins
+Include plugins for Vaadin and Spring Boot in your `build` section.
+
+```xml
+<build>
+    <plugins>
+        ...
+        <plugin>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-maven-plugin</artifactId>
+            <version>${vaadin.version}</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>prepare-frontend</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+        ...
+    </plugins>
+</build>
 ```
 
-or
+#### 6. Add Production Build Profile
+Add a Maven profile for building the project in production mode.
 
-```bash
-docker run -e POSTGRES_USER=petclinic -e POSTGRES_PASSWORD=petclinic -e POSTGRES_DB=petclinic -p 5432:5432 postgres:16.3
+```xml
+<profiles>
+    <profile>
+        <id>production</id>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-maven-plugin</artifactId>
+                    <version>${vaadin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>build-frontend</goal>
+                            </goals>
+                            <phase>compile</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+</profiles>
 ```
 
-Further documentation is provided for [MySQL](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/resources/db/mysql/petclinic_db_setup_mysql.txt)
-and [PostgreSQL](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/resources/db/postgres/petclinic_db_setup_postgres.txt).
+#### 7. Change Packaging to JAR
+Check and update your `pom.xml` to use `jar` packaging.
 
-Instead of vanilla `docker` you can also use the provided `docker-compose.yml` file to start the database containers. Each one has a profile just like the Spring profile:
+### Implementation
 
-```bash
-docker-compose --profile mysql up
+#### 1. Create a Separate Package for Vaadin Classes and Components
+To keep the project structure organized, create a separate package for all Vaadin-specific classes and components. For example:
+
+```
+org.springframework.samples.petclinic.
+    └── ui
+        └── VetView.java
 ```
 
-or
+#### 2. Create a Veterinarian View Class
+Add a simple view to demonstrate a use case. For example, list veterinarians in a table.
 
-```bash
-docker-compose --profile postgres up
-```
+```java
+@Route("")
+@RouteAlias("vets")
+public class VetView extends VerticalLayout {
+    public VetView(ClinicService clinicService) {
+        var grid = new Grid<>(Vet.class);
+        grid.setItems(clinicService.findVets());
+        grid.setColumns("firstName", "lastName", "specialties");
+        grid.setSizeFull();
+        add(grid);
 
-
-## API First Approach
-
-This API is built following some [API First approach principles](https://swagger.io/resources/articles/adopting-an-api-first-approach/).
-
-It is specified through the [OpenAPI](https://oai.github.io/Documentation/).
-It is specified in this [file](./src/main/resources/openapi.yml).
-
-Some of the required classes are generated during the build time. 
-Here are the generated file types:
-* DTOs
-* API template interfaces specifying methods to override in the controllers
-
-To see how to get them generated you can read the next chapter. 
-
-## Generated code
-
-Some of the required classes are generated during the build time using maven or any IDE (e.g., IntelliJ Idea or Eclipse).
-
-All of these classes are generated into the ``target/generated-sources`` folder.
-
-Here is a list of the generated packages and the corresponding tooling:
-
-| Package name                                   | Tool             |
-|------------------------------------------------|------------------|
-| org.springframework.samples.petclinic.mapper   | [MapStruct](https://mapstruct.org/)        |
-| org.springframework.samples.petclinic.rest.dto | [OpenAPI Generator maven plugin](https://github.com/OpenAPITools/openapi-generator/) |
-
-
-To get both, you have to run the following command:
-
-```jshelllanguage
-mvn clean install
-```
-
-## Security configuration
-In its default configuration, Petclinic doesn't have authentication and authorization enabled.
-
-### Basic Authentication
-In order to use the basic authentication functionality, turn in on from the `application.properties` file
-```properties
-petclinic.security.enable=true
-```
-This will secure all APIs and in order to access them, basic authentication is required.
-Apart from authentication, APIs also require authorization. This is done via roles that a user can have.
-The existing roles are listed below with the corresponding permissions 
-
-* `OWNER_ADMIN` -> `OwnerController`, `PetController`, `PetTypeController` (`getAllPetTypes` and `getPetType`), `VisitController`
-* `VET_ADMIN`   -> `PetTypeController`, `SpecialityController`, `VetController`
-* `ADMIN`       -> `UserController`
-
-There is an existing user with the username `admin` and password `admin` that has access to all APIs.
- In order to add a new user, please make `POST /api/users` request with the following payload:
-
-```json
-{
-    "username": "secondAdmin",
-    "password": "password",
-    "enabled": true,
-    "roles": [
-    	{ "name" : "OWNER_ADMIN" }
-    ]
+        setSizeFull();
+    }
 }
 ```
 
-## Working with Petclinic in Eclipse/STS
+### Build the application
 
-### prerequisites
-The following items should be installed in your system:
-* Maven 3 (https://maven.apache.org/install.html)
-* git command line tool (https://help.github.com/articles/set-up-git)
-* Eclipse with the m2e plugin (m2e is installed by default when using the STS (http://www.springsource.org/sts) distribution of Eclipse)
+You can build the application with mavan
 
-Note: when m2e is available, there is an m2 icon in Help -> About dialog.
-If m2e is not there, just follow the install process here: http://eclipse.org/m2e/download/
-* Eclipse with the [mapstruct plugin](https://mapstruct.org/documentation/ide-support/) installed.
-
-### Steps:
-
-1) In the command line
-```sh
-git clone https://github.com/spring-petclinic/spring-petclinic-rest.git
-```
-2) Inside Eclipse
-```
-File -> Import -> Maven -> Existing Maven project
+```bash
+mvn clean install
 ```
 
+To create a production build you need add the appropriate profile name
 
-## Looking for something in particular?
-
-| Layer | Source |
-|--|--|
-| REST API controllers | [REST folder](src/main/java/org/springframework/samples/petclinic/rest) |
-| Service | [ClinicServiceImpl.java](src/main/java/org/springframework/samples/petclinic/service/ClinicServiceImpl.java) |
-| JDBC | [jdbc folder](src/main/java/org/springframework/samples/petclinic/repository/jdbc) |
-| JPA | [jpa folder](src/main/java/org/springframework/samples/petclinic/repository/jpa) |
-| Spring Data JPA | [springdatajpa folder](src/main/java/org/springframework/samples/petclinic/repository/springdatajpa) |
-| Tests | [AbstractClinicServiceTests.java](src/test/java/org/springframework/samples/petclinic/service/clinicService/AbstractClinicServiceTests.java) |
-
-
-## Publishing a Docker image
-
-This application uses [Google Jib]([https://github.com/GoogleContainerTools/jib) to build an optimized Docker image into the [Docker Hub](https://cloud.docker.com/u/springcommunity/repository/docker/springcommunity/spring-petclinic-rest/) repository.
-The [pom.xml](pom.xml) has been configured to publish the image with a the `springcommunity/spring-petclinic-rest`image name.
-
-Command line to run:
-```sh
-mvn compile jib:build -X -DjibSerialize=true -Djib.to.auth.username=xxx -Djib.to.auth.password=xxxxx
+```bash
+mvn clean package -Pproduction
 ```
 
-## Interesting Spring Petclinic forks
+### Running the application
 
-The Spring Petclinic master branch in the main [spring-projects](https://github.com/spring-projects/spring-petclinic)
-GitHub org is the "canonical" implementation, currently based on Spring Boot and Thymeleaf.
+To run the application in development mode:
 
-This [spring-petclinic-rest](https://github.com/spring-petclinic/spring-petclinic-rest/) project is one of the [several forks](https://spring-petclinic.github.io/docs/forks.html) 
-hosted in a special GitHub org: [spring-petclinic](https://github.com/spring-petclinic).
-If you have a special interest in a different technology stack
-that could be used to implement the Pet Clinic then please join the community there.
+```bash
+mvn spring-boot:run
+```
 
+and then navigate to `http://localhost:9966/petclinic/` to see the Veterinarian view.
 
-# Contributing
-
-The [issue tracker](https://github.com/spring-petclinic/spring-petclinic-rest/issues) is the preferred channel for bug reports, features requests and submitting pull requests.
-
-For pull requests, editor preferences are available in the [editor config](https://github.com/spring-petclinic/spring-petclinic-rest/blob/master/.editorconfig) for easy use in common text editors. Read more and download plugins at <http://editorconfig.org>.
-
-
-
+To benefit from a Vaadin Plugin in you IDE take a look in the [documentation of Vaadin](https://vaadin.com/docs/latest/getting-started/import)
