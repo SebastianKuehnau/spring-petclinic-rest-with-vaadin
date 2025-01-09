@@ -199,4 +199,4 @@ mvn spring-boot:run
 
 and then navigate to `http://localhost:9966/petclinic/` to see the Veterinarian view.
 
-To benefit from a Vaadin Plugin in you IDE take a look in the [documentation of Vaadin](https://vaadin.com/docs/latest/getting-started/import)
+To benefit from a Vaadin Plugin in your IDE, please take a look into the [documentation of Vaadin](https://vaadin.com/docs/latest/getting-started/import)
