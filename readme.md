@@ -11,7 +11,7 @@ This example demonstrates how to integrate Vaadin into a Spring project with ste
 - Maven 3.5 or later (except for 3.8.2 and 3.8.3)
 - Spring Boot 3.0 or later
 
-### Project Configuration
+### Maven Configuration
 
 #### 1. Define Vaadin Version
 In your `pom.xml`, define a property for the Vaadin version to simplify updates.
@@ -90,10 +90,6 @@ Include plugins for Vaadin and Spring Boot in your `build` section.
                 </execution>
             </executions>
         </plugin>
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-        </plugin>
         ...
     </plugins>
 </build>
@@ -130,7 +126,26 @@ Add a Maven profile for building the project in production mode.
 #### 7. Change Packaging to JAR
 Check and update your `pom.xml` to use `jar` packaging.
 
-### Implementation
+### Project-Specific Configurations
+
+#### Excluding Swagger-UI Requests
+Swagger UI is used in the project to document the REST interfaces. This collides with requests for Vaadin and must be explicitly excluded. This setting can be made in the `application.properties` file:
+
+```properties
+vaadin.excludeUrls=/swagger-ui/**
+```
+
+#### Redirecting Swagger-UI Requests
+To keep using Swagger-UI in the project, define a `/swagger-ui` mapping in `RootRestController.java` and forward the requests to `swagger-ui/index.html`:
+
+```java
+@RequestMapping(value = "/swagger-ui")
+public void redirectToSwagger(HttpServletResponse response) throws IOException {
+    response.sendRedirect(this.servletContextPath + "/swagger-ui/index.html");
+}
+```
+
+### Vaadin Implementation
 
 #### 1. Create a Separate Package for Vaadin Classes and Components
 To keep the project structure organized, create a separate package for all Vaadin-specific classes and components. For example:
